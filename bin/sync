@@ -52,6 +52,7 @@ _sync_project() {
   if [[ -d $SOURCE_DIR ]]; then
     echo "Cheking out $PROJECT_NAME to $PROJECT_BRANCH ($SOURCE_DIR)"
     git -C $SOURCE_DIR fetch origin
+    git -C $SOURCE_DIR stash
     git -C $SOURCE_DIR checkout $PROJECT_BRANCH
     git -C $SOURCE_DIR pull origin $PROJECT_BRANCH
   else
