@@ -15,9 +15,8 @@ case $ACTION in
     ;;
 
   show)
-    for f in $CONFIG_DIR/*; do
-      key=$(basename $f)
-      value=$(cat $f)
+    for key in $(ls $CONFIG_DIR); do
+      value=$(cat "$CONFIG_DIR/$key")
       echo "$key:$value"
     done
     ;;
