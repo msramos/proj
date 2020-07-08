@@ -1,11 +1,18 @@
 #!/bin/sh
 PROJ_DIR="$HOME/.proj"
+CURRENT_DIR=$(pwd)
 
 if [ ! -z "$PROJ_HOME" ]; then
   PROJ_DIR=$PROJ_HOME
 fi
 
-PROJ_DATA_DIR="$PROJ_DIR"
+if [[ -d "$CURRENT_DIR/.proj" ]]; then
+  PROJ_DATA_DIR="$CURRENT_DIR/.proj"
+else
+  PROJ_DATA_DIR="$PROJ_DIR"
+fi
+
+PROJ_DATA_DIR="$PROJ_DATA_DIR"
 PROJ_BIN_DIR="$PROJ_DIR/bin"
 
 sh "$PROJ_DIR/bin/cli" $PROJ_BIN_DIR $PROJ_DATA_DIR $@

@@ -5,6 +5,9 @@ BIN_DIR="$1"
 SPECS_DIR="$2/specs"
 CONFIG_DIR="$2/config"
 
+if [[ ! -d $SPECS_DIR ]]; then mkdir -p $SPECS_DIR; fi
+if [[ ! -d $CONFIG_DIR ]]; then mkdir -p $CONFIG_DIR; fi
+
 # Call appropriate script
 COMMAND=$3
 case "$COMMAND" in
