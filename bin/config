@@ -1,0 +1,39 @@
+#!/bin/sh
+set -e
+
+# Args from CLI
+CONFIG_DIR=$1
+ACTION=$2
+
+case $ACTION in
+  workspace|pet)
+    KEY=$ACTION
+    VALUE=$3
+
+    echo $VALUE > "$CONFIG_DIR/$KEY"
+    echo "Key '$KEY' set to '$VALUE'"
+    ;;
+
+  show)
+    for f in $CONFIG_DIR/*; do
+      key=$(basename $f)
+      value=$(cat $f)
+      echo "$key:$value"
+    done
+    ;;
+
+  del|rm)
+    KEY=$3
+    echo "Key '$KEY' deleted"
+    rm $CONFIG_DIR/$KEY 2> /dev/null
+    ;;
+
+  *)
+  if [ -z "$ACTION" ]; then
+    echo "Available config commands {workspace|show|del}"
+    exit 1
+  else
+    echo "Unknown command $ACTION"
+    exit 1
+  fi
+esac

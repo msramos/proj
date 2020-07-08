@@ -1,0 +1,95 @@
+#!/bin/sh
+set -e
+
+# Args from CLI
+PROJECTS_DIR=$1
+CONFIG_DIR=$2
+PROJECT=$3
+
+WORKSPACE_FILE="$CONFIG_DIR/workspace"
+
+if [[ -f $WORKSPACE_FILE ]]; then
+  WORKSPACE=$(cat $WORKSPACE_FILE)
+else
+  echo "Workspace not configured. You can do it by using the 'config' command"
+  exit -1
+fi
+
+# Make sure that we have the workspace created
+mkdir -p $WORKSPACE
+
+# Pull one project into the workspace
+_sync_project() {
+  local PROJECT_DIR=$1
+  local PROJECT_NAME=$2
+  local PROJECT_BRANCH="master"
+  local PROJECT_REPO=""
+  local SOURCE_DIR="$WORKSPACE/$PROJECT_NAME"
+
+  if [[ ! -d $PROJECT_DIR ]]; then
+    echo "Project $PROJECT_NAME does not exist ($PROJECT_DIR)"
+    exit 1
+  fi  
+
+  if [[ -f "$PROJECT_DIR/repo" ]]; then
+    PROJECT_REPO=$(cat $PROJECT_DIR/repo)
+  else
+    echo "Project '$PROJECT_NAME' does not have a 'repo' file."
+    exit 0
+  fi
+
+  if [[ -f "$PROJECT_DIR/branch" ]]; then
+    PROJECT_BRANCH=$(cat $PROJECT_DIR/branch)
+  else
+    echo "$PROJECT_NAME: branch file not found. Using 'master'."
+  fi
+
+  if [ -z "$PROJECT_REPO" ]; then
+    echo "$PROJECT_NAME: invalid repository."
+    exit
+  fi
+
+  if [[ -d $SOURCE_DIR ]]; then
+    echo "Cheking out $PROJECT_NAME to $PROJECT_BRANCH ($SOURCE_DIR)"
+    git -C $SOURCE_DIR fetch origin
+    git -C $SOURCE_DIR checkout $PROJECT_BRANCH
+    git -C $SOURCE_DIR pull origin $PROJECT_BRANCH
+  else
+    echo "Cloning $PROJECT_REPO to $SOURCE_DIR"
+    git clone $PROJECT_REPO $SOURCE_DIR
+    git -C $SOURCE_DIR checkout $PROJECT_BRANCH
+    git -C $SOURCE_DIR pull origin $PROJECT_BRANCH
+  fi
+}
+
+# Sync projects that are present on the workspace
+_sync_existing_projects() {
+  for f in $(ls $WORKSPACE); do
+    local PROJECT_DIR="$PROJECTS_DIR/$f"
+    local PROJECT_NAME="$f"
+    
+    _sync_project $PROJECT_DIR $PROJECT_NAME &
+  done
+
+  wait
+}
+
+# Sync all projects
+_sync_all_projects() {
+  for f in $PROJECTS_DIR/*; do
+    local PROJECT_DIR=$f
+    local PROJECT_NAME=$(basename $f)
+    
+    _sync_project $PROJECT_DIR $PROJECT_NAME &
+  done
+
+  wait
+}
+
+if [ "$PROJECT" == "--all" ]; then
+  _sync_all_projects
+elif [ -z "$PROJECT" ]; then
+  _sync_existing_projects
+else
+  _sync_project "$PROJECTS_DIR/$PROJECT" $PROJECT
+fi

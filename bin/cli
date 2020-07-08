@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Setup dirs
+BIN_DIR="$1"
+SPECS_DIR="$2/specs"
+CONFIG_DIR="$2/config"
+
+# Call appropriate script
+COMMAND=$3
+case "$COMMAND" in
+  branch|b)
+    sh $BIN_DIR/branch $SPECS_DIR ${@:4}
+    ;;
+
+  config|c)
+    sh $BIN_DIR/config $CONFIG_DIR ${@:4}
+    ;;
+
+  sync|s)
+    sh $BIN_DIR/sync $SPECS_DIR $CONFIG_DIR ${@:4}
+    ;;
+
+  spec)
+    sh $BIN_DIR/spec $SPECS_DIR ${@:4}
+    ;;
+
+  *)
+    if [ -z "$COMMAND" ]; then
+      echo "Available commands: {branch|config|spec|sync}"
+    else
+      echo "Unknown command $COMMAND"
+    fi
+    ;;
+esac

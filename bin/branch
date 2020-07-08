@@ -1,0 +1,104 @@
+#!/bin/sh
+
+# Exit on first error
+set -e
+
+SPECS_DIR=$1
+ACTION=$2
+
+# Configures the branch of a project. This function will overwrite the branch
+# file inside the project dir. It will not change the branch on the actual
+# source code, only in the current configuration
+_set() {
+  local SPEC=$1
+  local BRANCH=$2
+  local SPEC_DIR=$SPECS_DIR/$SPEC
+
+  if [ -z "$SPEC" ]; then
+    echo "No project spec specified"
+    exit 1
+  fi
+
+  if [[ ! -d $SPEC_DIR ]]; then
+    echo "Project spec for $SPEC does not exist ($SPEC_DIR)"
+    exit 1
+  fi
+
+  if [ -z "$BRANCH" ]; then
+    echo "No branch specified"
+    exit 1
+  fi
+
+  echo $BRANCH > "$SPEC_DIR/branch"
+
+  echo "Project spec '$SPEC' is configured to use branch '$BRANCH'."
+}
+
+# Show the configured branch for a project (it is not the actual git branch).
+_show() {
+  local SPEC=$1
+  local SPEC_DIR=$SPECS_DIR/$SPEC
+  local BRANCH_FILE=$SPEC_DIR/branch
+  
+  if [[ ! -d $SPEC_DIR ]]; then
+    echo "Project spec $SPEC does not exist ($SPEC_DIR)"
+    exit 1
+  fi
+
+  if [[ -f "$BRANCH_FILE" ]]; then
+    local BRANCH="$(cat $BRANCH_FILE)"
+    echo "Project spec $SPEC is on '$BRANCH'"
+  else
+    echo "Project spec $SPEC is on 'master'"
+  fi
+}
+
+# Show the configured branches for all projects. So, for each directory in the
+# projects folder it will display the current branch
+_show_all() {
+  for dir in $(ls $SPECS_DIR); do
+    local SPEC_NAME=$dir
+    local SPEC_DIR="$SPECS_DIR/$SPEC_NAME"
+    local BRANCH_FILE="$SPEC_DIR/branch"
+
+
+    if [[ -f "$BRANCH_FILE" ]]; then
+      local BRANCH="$(cat $BRANCH_FILE)"
+      echo "$SPEC_NAME:$BRANCH"
+    else
+      echo "$SPEC_NAME:master"
+    fi
+  done
+}
+
+case $ACTION in
+  "set")
+    SPEC=$3
+    BRANCH=$4
+
+    _set $SPEC $BRANCH
+    ;;
+
+  "reset")
+    SPEC=$3
+
+    _set $SPEC "master"
+    ;;
+
+  "show")
+    SPEC=$3
+
+    _show $SPEC
+    ;;
+
+  "show-all")
+    _show_all
+    ;;
+
+  *)
+    if [ -z "$ACTION" ]; then
+      echo "Branch actions: {set|reset|show|show-all}"
+    else
+      echo "Unknown action '$ACTION'"
+    fi
+esac

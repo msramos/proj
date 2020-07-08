@@ -1,0 +1,76 @@
+#!/bin/bash
+set -e
+
+SPECS_DIR=$1
+ACTION=$2
+
+# Add a spec configuration.
+_add_spec() {
+  local GIT_URL=$1
+  local SPEC_NAME=$2
+
+  if [ -z "$GIT_URL" ]; then
+    echo "Empty git url"
+    exit
+  fi
+
+  if [ -z "$SPEC_NAME" ]; then
+    SPEC_NAME=$(basename $GIT_URL .git)
+  fi
+
+  local SPEC_DIR="$SPECS_DIR/$SPEC_NAME"
+  local SPEC_REPO="$SPEC_DIR/repo"
+
+  if [[ ! -d $SPEC_DIR ]]; then
+    mkdir -p $SPEC_DIR
+  fi
+
+  if [[ -f $SPEC_REPO ]]; then
+    local REPO=$(cat $SPEC_REPO)
+    echo "Project '$SPEC_NAME' already exists. Using $REPO."
+    exit 0
+  fi
+
+  echo $GIT_URL > $SPEC_REPO
+  echo "Project '$SPEC_NAME' added using remote '$GIT_URL'"
+}
+
+# Deletes the spec configuration from the specs directory
+_del_spec() {
+  local SPEC_NAME=$1
+  local SPEC_DIR="$SPECS_DIR/$SPEC_NAME"
+
+  rm -rf $SPEC_DIR 2> /dev/null
+
+  echo "Spec for project '$SPEC_NAME' deleted!"
+}
+
+_list_specs() {
+  ls $SPECS_DIR
+}
+
+case $ACTION in
+  add|new)
+    GIT_URL=$3
+    SPEC_NAME=$4
+
+    _add_spec $GIT_URL $SPEC_NAME
+    ;;
+  
+  del|delete|rm)
+    SPEC_NAME=$3
+    _del_spec $SPEC_NAME
+    ;;
+
+  ls|list)
+    _list_specs
+    ;;
+  
+  *)
+    if [ -z "$ACTION" ]; then
+      echo "Please specify an action"
+      exit 1
+    else
+      echo "Unknown action '$ACTION'"
+    fi
+esac
