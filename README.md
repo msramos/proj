@@ -97,6 +97,20 @@ $ proj spec rm my_project_name
 Spec for project 'my_project_name' deleted!
 ```
 
+**proj spec import**
+
+Reads all projects inside a directory and for each one, check if they are
+versioned using git and that a spec with the same name does not exist. If these
+two criteria matches, create a new spec for the project using its remote URL.
+
+```sh
+# Example
+$ proj spec import ~/GitProjects
+Imported 'some' (https://github.com/some_user/some.git)
+Imported 'random' (https://github.com/some_user/some.git)
+Imported 'project' (https://github.com/some_user/project.git)
+```
+
 ## proj sync
 
 Synchronizes the workspace. Any action from this command will perform changes on

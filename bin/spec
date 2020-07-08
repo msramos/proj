@@ -45,8 +45,27 @@ _del_spec() {
   echo "Spec for project '$SPEC_NAME' deleted!"
 }
 
+# List all specs
 _list_specs() {
   ls $SPECS_DIR
+}
+
+# Read all directories in the target directories and create specs by looking
+# at their remotes
+_import_specs() {
+  local BASE_DIRECTORY=$1
+
+  for dir in $(ls -d $BASE_DIRECTORY/*); do
+    local spec_name=$(basename $dir)
+    local spec_dir="$SPECS_DIR/$spec_name"
+
+    if [[ -d "$dir/.git" && ! -d $spec_dir ]]; then
+      local remote=$(git -C $dir config --get remote.origin.url)
+      mkdir -p $spec_dir
+      echo $remote > "$spec_dir/repo"
+      echo "Imported '$spec_name' ($remote)"
+    fi
+  done
 }
 
 case $ACTION in
@@ -64,6 +83,11 @@ case $ACTION in
 
   ls|list)
     _list_specs
+    ;;
+
+  import)
+    DIRECTORY=$3
+    _import_specs $DIRECTORY
     ;;
   
   *)
