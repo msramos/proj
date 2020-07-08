@@ -34,9 +34,19 @@ specs
   +-- repo
 ```
 
+First you configure your specs and then `sync` so changes will be made on the
+workspace.
+
 **Workspace**
 
-This is where your source code lives, where it will cloned and updated.
+This is the directory where your source code lives, where it will be cloned and
+updated.
+
+# Dynamic configuration and specs
+
+By default, `proj` will store all configuration and specs on `$HOME/.proj`, but
+you can change this behavior by creating a `.proj` on any directory you want to.
+When doing this, `proj` will store the configs and specs in this new path.
 
 # Usage
 
